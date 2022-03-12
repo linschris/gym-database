@@ -8,7 +8,9 @@ DROP TABLE session IF EXISTS session;
 DROP TABLE class IF EXISTS class;
 
 -- Representation of a person in our gym database.
--- 
+-- A person is not special, but more of a general categorization between
+-- members and employees (where we use specialization).
+
 CREATE TABLE person (
     person_id CHAR(16) PRIMARY KEY,
     first_name VARCHAR(15),
@@ -22,18 +24,27 @@ CREATE TABLE person (
 -- A person who works at the gym.
 -- Mainly an instructor or trainer.
 CREATE TABLE employee (
+    person_id CHAR(16),
+    expertise VARCHAR(20),
+    availablity VARCHAR(20), -- TODO: need to fix here
+    job_title VARCHAR(20),
 
+    FOREIGN KEY employee(person_id) REFERENCES person(person_id),
 );
 
--- A person who goes to the gym.
+-- A person who attends the gym, classes, and does workout sessions with trainers.
+-- A member MUST have a membership unlike employees.
 CREATE TABLE member (
     person_id INT PRIMARY KEY,
     credit_card_no CHAR(16),
     exp_date DATE, 
 
-    FOREIGN KEY purchaser(person_id) REFERENCES person(person_id),
+    FOREIGN KEY member(person_id) REFERENCES person(person_id),
 );
 
+
+-- Memberships for the gym. Required to be owned by a member.
+-- Price is dependent on the type and length of membership.
 CREATE TABLE memberships (
     member_id INT,
     membership_type VARCHAR(10),
@@ -52,6 +63,8 @@ CREATE TABLE class (
     end_time TIMESTAMP
 );
 
+-- A representation of a 1-on-1 trainer session.
+-- Sessions must be between one member and one trainer (employee).
 CREATE TABLE [session] (
     session_id SERIAL PRIMARY KEY,
     muscle_group VARCHAR(30),
@@ -59,12 +72,29 @@ CREATE TABLE [session] (
     end_time TIMESTAMP
 );
 
+-- A table of the statistics of a given person, member or employee.
+-- Carries body statistics (size, weight) and person records of a client.
 CREATE TABLE physique (
     height TINYINT, -- ft
+
     -- all weights and PRs should be in pounds
-    weight INT, -- lbs
+    weight INT, 
     -- personal record section
+    BMI DECIMAL(3, 1), 
     squat INT,
     deadlift INT,
     bench_press INT
 );
+
+-- Employee ratings
+-- 1-5 scale, works for any employee!
+-- Useful information for determining most popular or least popular 
+-- employees at the gym.
+CREATE TABLE ratings (
+    employee_id CHAR(16),
+    -- rating is 1-5
+    rating TINYINT
+
+    CHECK(rating BETWEEN 1 AND 5);
+    FOREIGN KEY ratings(employee_id) REFERENCES employee_id(person_id), 
+);  

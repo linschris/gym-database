@@ -27,7 +27,7 @@ for num in range(1, 150):
     people["first_name"].append(first_name)
     people["last_name"].append(last_name)
     people["email_address"].append(email_address)
-    people["phone_number"].append(fake.phone_number())
+    people["phone_number"].append(fake.cell_phone())
 
 # create fake members
 for num in range(135):
