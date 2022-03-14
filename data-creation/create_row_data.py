@@ -26,6 +26,7 @@ membership_price = [20.35, 40.55]
 
 
 
+
 '''
     Creates fake people.
 '''
@@ -38,7 +39,7 @@ for num in range(1, NUM_TOTAL_PEOPLE):
     people["first_name"].append(first_name)
     people["last_name"].append(last_name)
     people["email_address"].append(email_address)
-    people["phone_number"].append(fake.phone_number())
+    people["phone_number"].append(f'{r.randint(100, 999)}-{r.randint(100, 999)}-{r.randint(100, 999)}')
 
 '''
     Creates fake members.
@@ -47,13 +48,15 @@ for num in range(1, NUM_TOTAL_PEOPLE - NUM_TOTAL_EMPLOYEES):
     members["person_id"].append(num) # TODO 
     # fake payment info
     members["credit_card_no"].append(fake.credit_card_number())
-    members["exp"].append(fake.credit_card_expire())
+    random_month = r.randint(1, 12)
+    members["exp"].append(f'{r.randint(2022, 2035)}-{fake.month()}-01')
 
 '''
     Creates fake physqiues (body stats and PRs).
 '''
 for i in range(1, NUM_PHYSIQUES):
     physiques["person_id"].append(r.randint(1, NUM_TOTAL_PEOPLE-1)) # TODO: if necessary, not use just incrementing num
+    physiques["time_updated"].append(fake.date_this_year())
     # fake physique info
     fake_height = r.randint(36, 100) # inches
     fake_weight = r.randint(80, 400)
@@ -62,7 +65,7 @@ for i in range(1, NUM_PHYSIQUES):
 
     physiques["height"].append(fake_height)
     physiques["weight"].append(fake_weight)
-    physiques["bmi"].append(fake_bmi)
+    # physiques["bmi"].append(fake_bmi)
     physiques["squat"].append(r.randint(45, 1000))
     physiques["bench_press"].append(r.randint(45, 1000))
     physiques["deadlift"].append(r.randint(45, 1000))
@@ -90,13 +93,6 @@ for i in range(NUM_CLASSES):
     classes["start_time"].append(fake_start_time)
     classes["end_time"].append(fake_end_time)
 
-# Class Ratings
-
-def create_class_rating(sid, cid):
-    class_rating["student_id"].append(sid)
-    class_rating["class_id"].append(cid)
-    class_rating["rating"].append(r.randint(1, 5))
-
 # Class Students
 
 for i in range(NUM_ENROLLMENTS):
@@ -105,10 +101,9 @@ for i in range(NUM_ENROLLMENTS):
     random_class = r.randint(0, 20)
     class_student["student_id"].append(random_student)
     class_student["class_id"].append(random_class)
-
-    # Simulate only some students rating...
-    if random_num == 1:
-        create_class_rating(random_student, random_class)
+    # print(random_num)
+    class_student["rating"].append(r.randint(1, 5) if random_num == 1 else 'NULL')
+    # print(class_student["rating"])
 
 create_csv(people, 'person')
 create_csv(physiques, 'physique')
@@ -116,4 +111,3 @@ create_csv(members, 'member')
 create_csv(membership_prices, 'membership_prices')
 create_csv(classes, 'class')
 create_csv(class_student, 'class_student')
-create_csv(class_rating, 'class_rating')

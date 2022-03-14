@@ -61,7 +61,7 @@ def create_csv_directory():
     try:
         os.mkdir('csv')
     except OSError:
-        print("CSV Creation Failure. Usually, means csv sub directory was already made.") 
+        print("CSV Directory Creation Failure. Usually, means csv sub directory was already made.") 
     else:
         print("Created csv sub-dir.")
 
@@ -69,20 +69,29 @@ def create_csv_directory():
 
 session_data = {
     'session_id': 'id',
-    'trainer_id': (135, 150),
-    'trainee_id': (0, 134),
     'session_type': ['Upper Body', 'Chest', 'Back', 'Legs', 'Lower Body', 'Cardio'],
     'time': {
         'start_time': ['month', True, True], # before and after now()
         'window': (1, 3)
-    },
-    'rating': (1, 5)
+    }
+}
+
+session_trainers = {
+    'session_id': 'id',
+    'person_id': (NUM_TOTAL_PEOPLE - NUM_TOTAL_EMPLOYEES, NUM_TOTAL_PEOPLE)
+}
+
+session_trainees = {
+    'session_id': 'id',
+    'person_id': (1, NUM_TOTAL_PEOPLE - NUM_TOTAL_EMPLOYEES),
+    'rating': (1,5)
 }
 
 fake_employee_data = {
     'person_id': 'id',
     'job_title': ['Instructor', 'Trainer', 'Receptionist', 'Scheduler'],
-    'expertise': ['Chest', 'Back', 'Legs', 'Upper Body', 'Lower Body', 'Calisthenics', 'Cardio']
+    'salary': (1000, 100000),
+    'expertise': ['Chest', 'Back', 'Legs', 'Upper Body', 'Lower Body', 'Calisthenics', 'Cardio'],   
 }
 
 fake_employee_ava = {
@@ -93,19 +102,9 @@ fake_employee_ava = {
     }
 }
 
-fake_class_data = {
-    'class_id': 'id',
-    'class_type': ['HIIT', 'Upper Body', 'Legs', 'Abs', 'Yoga'],
-    'time': {
-        'start_time': ['month', True, True], # before and after now()
-        'window': (1, 1) # only 1 hr sessions
-    },
-    'rating': (1, 5)
-}
-
 fake_class_instructors = {
     'class_id': 'id',
-    'instructor_id': (135, 150)
+    'person_id': (NUM_TOTAL_PEOPLE - NUM_TOTAL_EMPLOYEES, NUM_TOTAL_PEOPLE)
 }
 
 fake_membership_data = {
@@ -115,6 +114,8 @@ fake_membership_data = {
 }
 
 create_csv(create_default_dict(session_data, end=NUM_SESSIONS), 'sessions')
+create_csv(create_default_dict(session_trainees, end=NUM_SESSIONS), 'session_trainees')
+create_csv(create_default_dict(session_trainers, end=NUM_SESSIONS), 'session_trainers')
 create_csv(create_default_dict(fake_employee_data, NUM_TOTAL_PEOPLE - NUM_TOTAL_EMPLOYEES, NUM_TOTAL_PEOPLE), 'employee')
 create_csv(create_default_dict(fake_employee_ava, NUM_TOTAL_PEOPLE - NUM_TOTAL_EMPLOYEES, NUM_TOTAL_PEOPLE), 'employee_availability')
 create_csv(create_default_dict(fake_membership_data, end=NUM_TOTAL_PEOPLE - NUM_TOTAL_EMPLOYEES), 'memberships')
