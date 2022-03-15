@@ -43,6 +43,8 @@ def create_default_dict(data, start=1, end=20):
                 print(type(possible_data))
                 if possible_data[0] == 'month':
                     new_dict[column].append(fake.date_time_this_month(possible_data[1], possible_data[2]))
+                elif possible_data[0] == 'year':
+                    new_dict[column].append(fake.date_this_year(possible_data[1], possible_data[2]))
                 else:
                     new_dict[column].append(possible_data[r.randint(0, len(possible_data) - 1)])
     return new_dict
@@ -69,11 +71,14 @@ def create_csv_directory():
 
 session_data = {
     'session_id': 'id',
+    'trainer_id': (NUM_TOTAL_PEOPLE - NUM_TOTAL_EMPLOYEES, NUM_TOTAL_PEOPLE),
+    'trainee_id': (1, NUM_TOTAL_PEOPLE - NUM_TOTAL_EMPLOYEES),
     'session_type': ['Upper Body', 'Chest', 'Back', 'Legs', 'Lower Body', 'Cardio'],
     'time': {
         'start_time': ['month', True, True], # before and after now()
         'window': (1, 3)
-    }
+    },
+    'rating': (1, 5)
 }
 
 session_trainers = {
@@ -110,12 +115,12 @@ fake_class_instructors = {
 fake_membership_data = {
     "person_id": 'id',
     "membership_type": ['Classic', 'Premium'],
-    "last_payment": ['month', True, True] # times before now()
+    "last_payment": ['year', True, False] # times before now()
 }
 
 create_csv(create_default_dict(session_data, end=NUM_SESSIONS), 'sessions')
-create_csv(create_default_dict(session_trainees, end=NUM_SESSIONS), 'session_trainees')
-create_csv(create_default_dict(session_trainers, end=NUM_SESSIONS), 'session_trainers')
+# create_csv(create_default_dict(session_trainees, end=NUM_SESSIONS), 'session_trainees')
+# create_csv(create_default_dict(session_trainers, end=NUM_SESSIONS), 'session_trainers')
 create_csv(create_default_dict(fake_employee_data, NUM_TOTAL_PEOPLE - NUM_TOTAL_EMPLOYEES, NUM_TOTAL_PEOPLE), 'employee')
 create_csv(create_default_dict(fake_employee_ava, NUM_TOTAL_PEOPLE - NUM_TOTAL_EMPLOYEES, NUM_TOTAL_PEOPLE), 'employee_availability')
 create_csv(create_default_dict(fake_membership_data, end=NUM_TOTAL_PEOPLE - NUM_TOTAL_EMPLOYEES), 'memberships')

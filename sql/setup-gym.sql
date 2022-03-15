@@ -105,7 +105,7 @@ CREATE TABLE membership (
 
     -- most recent payment from member for month of membership
     -- update upon subsequent payments from members.
-    last_payment TIMESTAMP,
+    last_payment DATE,
 
     -- a member can only have one type of membership
     PRIMARY KEY (person_id, membership_type), 
@@ -153,34 +153,42 @@ CREATE TABLE class_student (
 
 -- A representation of a 1-on-1 trainer session.
 -- Sessions must be between only one member and one trainer (employee).
+-- As session -> {trainer_id, trainee_id}, we don't have to break it down
+-- further.
 CREATE TABLE session (
     session_id SERIAL PRIMARY KEY, 
+    trainer_id INT,
+    trainee_id INT,
     session_type VARCHAR(30) NOT NULL, -- could be yoga, HIIT, upperbody, etc.
     start_time TIMESTAMP NOT NULL,
     end_time TIMESTAMP NOT NULL,
     rating TINYINT, -- must be 1-5, and comes from member
     
-    CHECK(rating BETWEEN 1 AND 5)
+    CHECK(rating BETWEEN 1 AND 5),
+    FOREIGN KEY session(trainer_id) REFERENCES employee(person_id),
+    FOREIGN KEY session_trainee(trainee_id) REFERENCES member(person_id)
 );
 
-CREATE TABLE session_trainer (
-    session_id BIGINT UNSIGNED,
-    person_id INT,
+-- -- A trainer for a given session.
+-- CREATE TABLE session_trainer (
+--     session_id BIGINT UNSIGNED,
+--     person_id INT,
 
-    PRIMARY KEY (session_id, person_id),
-    FOREIGN KEY session_trainer(person_id) REFERENCES employee(person_id),
-    FOREIGN KEY session_trainer(session_id) REFERENCES session(session_id)
-);
+--     PRIMARY KEY (session_id, person_id),
+--     FOREIGN KEY session_trainer(person_id) REFERENCES employee(person_id)
+--     FOREIGN KEY session_trainer(session_id) REFERENCES session(session_id)
+-- );
 
-CREATE TABLE session_trainee (
-    session_id BIGINT UNSIGNED,
-    person_id INT,
-    rating TINYINT,
+-- -- A trainee for a given session.
+-- CREATE TABLE session_trainee (
+--     session_id BIGINT UNSIGNED,
+--     person_id INT,
+--     rating TINYINT,
 
-    CHECK (rating BETWEEN 1 AND 5),
-    PRIMARY KEY (session_id, person_id),
-    FOREIGN KEY session_trainee(person_id) REFERENCES member(person_id),
-    FOREIGN KEY session_trainee(session_id) REFERENCES session(session_id)
-);
+--     CHECK (rating BETWEEN 1 AND 5),
+--     PRIMARY KEY (session_id, person_id),
+--     FOREIGN KEY session_trainee(person_id) REFERENCES member(person_id),
+--     FOREIGN KEY session_trainee(session_id) REFERENCES session(session_id)
+-- );
 
 -- Indices: justified in part B

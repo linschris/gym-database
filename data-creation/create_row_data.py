@@ -1,10 +1,12 @@
 '''
     Creates the data for my database final project.
+    These records require information on other columns, and therefore
+    are generated with a for loop.
+
     Not completely original, refer to 
     https://towardsdatascience.com/generating-random-data-into-a-database-using-python-fd2f7d54024e
 '''
 
-import math
 import pandas as pd
 from faker import Faker
 from collections import defaultdict
@@ -97,8 +99,8 @@ for i in range(NUM_CLASSES):
 
 for i in range(NUM_ENROLLMENTS):
     random_num = r.randint(1, 2)
-    random_student = r.randint(0, 134)
-    random_class = r.randint(0, 20)
+    random_student = r.randint(0, NUM_TOTAL_PEOPLE - NUM_TOTAL_EMPLOYEES)
+    random_class = r.randint(0, NUM_CLASSES)
     class_student["student_id"].append(random_student)
     class_student["class_id"].append(random_class)
     # print(random_num)
