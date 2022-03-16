@@ -1,5 +1,6 @@
+CREATE DATABASE gymDB;
+USE gymDB;
 -- DROP TABLE statements
-
 DROP TABLE IF EXISTS class_instructor;
 DROP TABLE IF EXISTS class_student;
 DROP TABLE IF EXISTS class;
