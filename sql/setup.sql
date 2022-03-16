@@ -169,26 +169,7 @@ CREATE TABLE session (
     FOREIGN KEY session_trainee(trainee_id) REFERENCES member(person_id)
 );
 
--- -- A trainer for a given session.
--- CREATE TABLE session_trainer (
---     session_id BIGINT UNSIGNED,
---     person_id INT,
-
---     PRIMARY KEY (session_id, person_id),
---     FOREIGN KEY session_trainer(person_id) REFERENCES employee(person_id)
---     FOREIGN KEY session_trainer(session_id) REFERENCES session(session_id)
--- );
-
--- -- A trainee for a given session.
--- CREATE TABLE session_trainee (
---     session_id BIGINT UNSIGNED,
---     person_id INT,
---     rating TINYINT,
-
---     CHECK (rating BETWEEN 1 AND 5),
---     PRIMARY KEY (session_id, person_id),
---     FOREIGN KEY session_trainee(person_id) REFERENCES member(person_id),
---     FOREIGN KEY session_trainee(session_id) REFERENCES session(session_id)
--- );
-
 -- Indices: justified in part B
+
+CREATE INDEX rating ON session (rating);
+

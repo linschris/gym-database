@@ -12,6 +12,7 @@ Some sections are provided as recommended program breakdowns, but are optional
 to keep, and you will probably want to extend them based on your application's
 features.
 """
+from ast import Pass
 import sys  # to print error messages to sys.stderr
 import mysql.connector
 # To get error codes from the connector, useful for user-friendly
@@ -95,6 +96,9 @@ def example_query():
 # ----------------------------------------------------------------------
 # Functions for Logging Users In
 # ----------------------------------------------------------------------
+def login_user(user, password):
+    pass
+
 
 
 # ----------------------------------------------------------------------

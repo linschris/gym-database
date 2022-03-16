@@ -1,4 +1,3 @@
-
 -- Functions
 DROP FUNCTION IF EXISTS weight_status;
 DROP FUNCTION IF EXISTS total_stats;
