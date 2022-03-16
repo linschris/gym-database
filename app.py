@@ -1,16 +1,12 @@
 """
-This is a template you may start with for your Final Project application.
-You may choose to modify it, or you may start with the example function
-stubs (most of which are incomplete). An example is also posted
-from Lecture 19 on Canvas.
+Gym Management Application (.py)
+By Christopher Linscott
 
-For full credit, remove any irrelevant comments, which are included in the
-template to help you get started. Replace this program overview with a
-brief overview of your application as well (including your name/partners name).
+A simple gym management application which acts as an abstraction
+to the gym database and allows one to get information from the database
+given some input variables!
 
-Some sections are provided as recommended program breakdowns, but are optional
-to keep, and you will probably want to extend them based on your application's
-features.
+
 """
 from ast import Pass
 import sys  # to print error messages to sys.stderr
