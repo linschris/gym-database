@@ -96,6 +96,10 @@ DELIMITER ;
 -- Add at least two users into your user_info table so that when we run this file,
 -- we will have examples users in the database.
 
+CALL sp_add_user('gymmember', 'gains');
+CALL sp_add_user('gymadmin', 'trains');
+
+
 CALL sp_add_user('lchris', 'coolguy123');
 CALL sp_add_user('htan', 'coolguy226');
 CALL sp_add_user('mrpg', 'zeroclutch');

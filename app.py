@@ -6,7 +6,7 @@ A simple gym management application which acts as an abstraction
 to the gym database and allows one to get information from the database
 given some input variables!
 
-
+Run this file and see the possibilities!
 """
 from ast import Pass
 import sys  # to print error messages to sys.stderr
@@ -14,10 +14,14 @@ import mysql.connector
 # To get error codes from the connector, useful for user-friendly
 # error-handling
 import mysql.connector.errorcode as errorcode
+from termcolor import colored
+from prettytable import PrettyTable
 
 # Debugging flag to print errors when debugging that shouldn't be visible
 # to an actual client. Set to False when done testing.
 DEBUG = True
+IS_ADMIN = False
+DONE = False
 
 '''
     TODOs:
@@ -85,7 +89,7 @@ def example_query():
             sys.stderr(err)
             sys.exit(1)
         else:
-            sys.stderr('An error occurred, give something useful for clients...')
+            sys.stderr('An error occurred, please retry calling the function.')
 
 
 
@@ -93,6 +97,7 @@ def example_query():
 # Functions for Logging Users In
 # ----------------------------------------------------------------------
 def login_user(user, password):
+
     pass
 
 
@@ -106,19 +111,20 @@ def show_options():
     viewing <x>, filtering results with a flag (e.g. -s to sort),
     sending a request to do <x>, etc.
     """
-    print('What would you like to do? ')
-    print('  (TODO: provide command-line options)')
-    print('  (x) - something nifty to do')
-    print('  (x) - another nifty thing')
-    print('  (x) - yet another nifty thing')
-    print('  (x) - more nifty things!')
-    print('  (q) - quit')
-    print()
-    ans = input('Enter an option: ').lower()
-    if ans == 'q':
-        quit_ui()
-    elif ans == '':
-        pass
+    while not DONE:
+        print('What would you like to do? ')
+        print('  (c) - What classes are currently being offered?')
+        print('  (t) - Top 10 Lift Stats')
+        print('  (i) - Instructor Ratings')
+        print('  (m) - Pay for your membership!')
+        print('  (q) - quit')
+        print()
+        ans = input('Enter an option: ').lower()
+        if ans == 'q':
+            quit_ui()
+        else:
+            take_in_input(ans)
+
 
 
 # You may choose to support admin vs. client features in the same program, or
@@ -129,18 +135,120 @@ def show_admin_options():
     Displays options specific for admins, such as adding new data <x>,
     modifying <x> based on a given id, removing <x>, etc.
     """
-    print('What would you like to do? ')
-    print('  (x) - something nifty for admins to do')
-    print('  (x) - another nifty thing')
-    print('  (x) - yet another nifty thing')
-    print('  (x) - more nifty things!')
-    print('  (q) - quit')
-    print()
-    ans = input('Enter an option: ').lower()
-    if ans == 'q':
-        quit_ui()
-    elif ans == '':
-        pass
+    while not DONE:
+        print('What would you like to do? ')
+        print('  (g) - Grab information about any relation! (give input relation)')
+        print('  (f) - Fire employees/members')
+        print('  (i) - Instructor Ratings')
+        print('  (q) - quit')
+        print()
+        ans = input('Enter an option: ').lower()
+        if ans == 'q':
+            quit_ui()
+        else:
+            print(ans)
+            take_in_input(ans)
+
+
+def take_in_input(user_input):
+    letter = user_input[0]
+    if letter == 'i':
+        instructor_ratings()
+    elif not IS_ADMIN:
+        if letter == 'c':
+            # Grab classes
+            select_query('class')
+        elif letter == 't':
+            # Leaderboard query
+            leaderboard_query()
+        elif letter == 'm':
+            # Pay for membership
+            person_id = int(input('What is your person ID number?\n'))
+            pay_membership(person_id)
+    else:
+        if letter == 'g':
+            # Ask for input
+            # SELECT query with input
+            relation_name = input("What relation would you like to access?\n")
+            select_query(relation_name)
+
+
+def select_query(relation_name=None, where=None):
+    cursor = conn.cursor()
+    if not relation_name:
+        print("Invalid, nothing to select.")
+    else:
+        where_clause = where if where else ''
+        sql = "SELECT * FROM %s %s;" % (relation_name, where_clause)
+        try:
+            execute_and_print_sql(cursor, sql)
+        except mysql.connector.ProgrammingError as err:
+            if not DEBUG:
+                print(f"{colored('ERROR', 'red')}: {colored(err, 'red')}")
+            # sys.exit(1)
+            else:
+                error_string = f'An error occurred, couldn\'t select from relation {relation_name} {where_clause}'
+                print_error(error_string)
+            
+        
+def instructor_ratings():
+    cursor = conn.cursor()
+    sql = "SELECT person_id AS instructor_id, IFNULL(AVG(rating), 'N/A') AS avg_rating, COUNT(*) AS total_classes_sessions FROM ((SELECT class_id, person_id, rating FROM employee NATURAL JOIN class_instructor NATURAL JOIN class NATURAL JOIN (SELECT class_id, rating FROM class_student) AS class_ratings UNION SELECT session_id AS class_id, trainer_id AS person_id, rating FROM session)) AS ratings GROUP BY instructor_id ORDER BY avg_rating DESC;"
+    try:
+        execute_and_print_sql(cursor, sql)
+    except mysql.connector.ProgrammingError as err:
+        if not DEBUG:
+            print(f"{colored('ERROR', 'red')}: {colored(err, 'red')}")
+        # sys.exit(1)
+        else:
+            error_string = f'An error occurred, couldn\'t do query.'
+            print_error(error_string)
+
+def leaderboard_query():
+    cursor = conn.cursor()
+    sql = "WITH total_stats AS (SELECT first_name, last_name, total_stats(person_id) AS total_lift_stats FROM physique NATURAL JOIN person) SELECT COUNT(ts.total_lift_stats) AS `rank`, CONCAT(ts.first_name, ' ', SUBSTRING(ts.last_name, 1, 1), '.') AS `name`, ts.total_lift_stats FROM total_stats ts, total_stats t WHERE ts.total_lift_stats < t.total_lift_stats GROUP BY ts.first_name, ts.last_name, ts.total_lift_stats ORDER BY COUNT(ts.total_lift_stats) LIMIT 10;"
+    try:
+        execute_and_print_sql(cursor, sql)
+    except mysql.connector.ProgrammingError as err:
+        if not DEBUG:
+            print(f"{colored('ERROR', 'red')}: {colored(err, 'red')}")
+        # sys.exit(1)
+        else:
+            error_string = f'An error occurred, couldn\'t do query.'
+            print_error(error_string)
+def pay_membership(person_id):
+    cursor = conn.cursor()
+    sql = "CALL pay_membership(%d)" % (person_id)
+    try:
+        execute_and_print_sql(cursor, sql, False)
+        print_success('Success!')
+    except mysql.connector.ProgrammingError as err:
+        if not DEBUG:
+            print(f"{colored('ERROR', 'red')}: {colored(err, 'red')}")
+        # sys.exit(1)
+        else:
+            error_string = f'An error occurred, couldn\'t do query.'
+            print_error(error_string)
+
+
+def execute_and_print_sql(cursor, sql, print_table=True):
+    cursor.execute(sql)
+    if print_table:
+        rows = cursor.fetchall()
+        field_names = [i[0] for i in cursor.description]
+        t = PrettyTable(field_names)
+        for row in rows:
+            t.add_row(list(row))
+        print_success('Success!')
+        print(t)
+    
+
+
+def print_error(error_str):
+    print(colored(error_str, 'red'))
+
+def print_success(success_str):
+    print(colored(success_str, 'green'))
 
 
 def quit_ui():
@@ -156,6 +264,7 @@ def main():
     Main function for starting things up.
     """
     show_options()
+    # show_admin_options()
 
 
 if __name__ == '__main__':
