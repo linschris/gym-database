@@ -19,7 +19,9 @@ With mySQL set up, go into mysql (i.e. log and connect) while being in the proje
 
 `source sql/setup.sql;`
 `source sql/setup-routines.sql;`
+`source sql/setup-passwords.sql;`
 `source sql/grant-permissions.sql;`
+
 
 Afterward, you can add the data in the CSV folder by the following command:
 
