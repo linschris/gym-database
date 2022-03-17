@@ -1,4 +1,10 @@
 -- File for Password Management section of Final Project
+DROP PROCEDURE IF EXISTS sp_add_user;
+DROP FUNCTION IF EXISTS make_salt;
+DROP FUNCTION IF EXISTS authenticate;
+DROP TABLE IF EXISTS user_info;
+
+SET GLOBAL log_bin_trust_function_creators = True;
 
 -- (Provided) This function generates a specified number of characters for using as a
 -- salt in passwords.
@@ -38,7 +44,8 @@ CREATE TABLE user_info (
     -- represented as 2 characters.  Thus, 256 / 8 * 2 = 64.
     -- We can use BINARY or CHAR here; BINARY simply has a different
     -- definition for comparison/sorting than CHAR.
-    password_hash BINARY(64) NOT NULL
+    password_hash BINARY(64) NOT NULL,
+    is_admin TINYINT NOT NULL
 );
 
 -- [Problem 1a]
@@ -46,7 +53,7 @@ CREATE TABLE user_info (
 -- of 20 characters). Salts the password with a newly-generated salt value,
 -- and then the salt and hash values are both stored in the table.
 DELIMITER !
-CREATE PROCEDURE sp_add_user(new_username VARCHAR(20), password VARCHAR(20))
+CREATE PROCEDURE sp_add_user(new_username VARCHAR(20), password VARCHAR(20), is_admin TINYINT)
 BEGIN
   DECLARE hashed_password BINARY(64); -- hashed password + salt (prepend) combo
   DECLARE salt CHAR(8);
@@ -56,7 +63,7 @@ BEGIN
   INTO hashed_password;
 
   -- Insert into user_info for validiation later.
-  INSERT INTO user_info VALUES (new_username, salt, hashed_password);
+  INSERT INTO user_info VALUES (new_username, salt, hashed_password, is_admin);
 END !
 DELIMITER ;
 
@@ -96,13 +103,13 @@ DELIMITER ;
 -- Add at least two users into your user_info table so that when we run this file,
 -- we will have examples users in the database.
 
-CALL sp_add_user('gymmember', 'gains');
-CALL sp_add_user('gymadmin', 'trains');
+CALL sp_add_user('gymmember', 'gains', 0);
+CALL sp_add_user('gymadmin', 'trains', 1);
 
 
-CALL sp_add_user('lchris', 'coolguy123');
-CALL sp_add_user('htan', 'coolguy226');
-CALL sp_add_user('mrpg', 'zeroclutch');
+CALL sp_add_user('lchris', 'coolguy123', 1);
+CALL sp_add_user('htan', 'coolguy226', 0);
+CALL sp_add_user('mrpg', 'zeroclutch', 0);
 
 
 -- [Problem 1d]

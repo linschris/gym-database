@@ -7,6 +7,10 @@ to the gym database and allows one to get information from the database
 given some input variables!
 
 Run this file and see the possibilities!
+If you don't want to make a new user, use 
+'gymmember' for user and 'gains' for pass to try out non-admin mode!
+
+Or refer to setup-passwords to see already created users.
 """
 
 import sys  # to print error messages to sys.stderr
@@ -18,7 +22,7 @@ from queries import *
 
 # Debugging flag to print errors when debugging that shouldn't be visible
 # to an actual client. Set to False when done testing.
-DEBUG = True
+DEBUG = False
 DONE = False
 # ----------------------------------------------------------------------
 # SQL Utility Functions
@@ -40,7 +44,7 @@ def get_conn(user, password):
         )
         if DEBUG:
             print('Successfully connected.')
-        return conn, True if user == "gymadmin" else False
+        return conn
     except mysql.connector.Error as err:
         # Remember that this is specific to _database_ users, not
         # application users. So is probably irrelevant to a client in your
@@ -59,12 +63,42 @@ def get_conn(user, password):
 # ----------------------------------------------------------------------
 # Functions for Logging Users In
 # ----------------------------------------------------------------------
-def login_user():
-    print("If you are an admin, type in the corresponding credentials.")
-    print("Otherwise, simply type gymmember and memberpw.")
+def login_user(conn):
+    print("Please type in your corresponding credentials to access the DB.")
     user = input("Username:\n")
     password = input("Password:\n")
-    return get_conn(user, password)
+    return authenticate(conn, user, password)
+
+def authenticate(conn, user, password):
+    authenticate_procedure = "SELECT authenticate(\'%s\', \'%s\') AS logged_in;" % (user, password)
+    cursor = conn.cursor()
+    cursor.execute(authenticate_procedure)
+    rows = cursor.fetchall()
+    for row in rows:
+        if row[0]:
+            print_success('Authenticated!')
+            return is_admin(cursor, user)
+        else:
+            print_error('Could not authenticate. Please try again.')
+            exit()
+
+def is_admin(cursor, user):
+    query = "SELECT is_admin FROM user_info WHERE username = \'%s\';" % (user)
+    try:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        for row in rows:
+            if row[0]:
+                print_success('Signed in as an admin!')
+                conn = get_conn('gymadmin', 'adminpw')
+                return conn, True
+            else:
+                print_success('Signed in as a member!')
+                conn = get_conn('gymmember', 'memberpw')
+                return conn, False
+    except mysql.connector.ProgrammingError as err:
+        handle_error(err)
+
 
 
 # ----------------------------------------------------------------------
@@ -81,10 +115,12 @@ def show_options():
         print('  (c) - What classes are currently being offered?')
         print('  (t) - Top 10 Lift Stats')
         print('  (i) - Instructor Ratings')
+        print('  (p) - Enroll in class')
+        print('  (r) - Give class rating')
         print('  (m) - Pay for your membership!')
         print('  (q) - quit')
         print()
-        ans = input('Enter an option: ').lower()
+        ans = input('Enter an option: \n').lower()
         if ans == 'q':
             quit_ui()
         else:
@@ -103,15 +139,14 @@ def show_admin_options():
     while not DONE:
         print('What would you like to do? ')
         print('  (g) - Grab information about any relation! (give input relation)')
-        print('  (f) - Fire employees/members')
+        print('  (f) - Fire employees or remove members')
         print('  (i) - Instructor Ratings')
         print('  (q) - quit')
         print()
-        ans = input('Enter an option: ').lower()
+        ans = input('Enter an option: \n').lower()
         if ans == 'q':
             quit_ui()
         else:
-            print(ans)
             take_in_input(ans)
 
 
@@ -133,6 +168,18 @@ def take_in_input(user_input):
             # Pay for membership
             person_id = int(input('What is your person ID number?\n'))
             pay_membership(conn, person_id)
+        elif letter == 'p':
+            # Enroll in class
+            person_id = int(input("What is your person ID?\n"))
+            class_id = int(input("What is the class ID of the class you want to enroll?\n"))
+            enroll_in_class(conn, person_id, class_id)
+        elif letter == 'r':
+            # Give rating
+            num_choice = int(input("Type 1 if you're voting for a session, and 2 for a class.\n"))
+            cs_id = int(input("What is the class or session ID?\n"))
+            rating = int(input("Give a rating from 1-5 (any other values will not work).\n"))
+            person_id = int(input("What is your person ID?\n"))
+            enroll_in_class(conn, cs_id, person_id, rating, num_choice)
         else:
             print_error("Not an available option, please try again.")
     else:
@@ -141,6 +188,12 @@ def take_in_input(user_input):
             # SELECT query with input
             relation_name = input("What relation would you like to access?\n")
             select_query(conn, relation_name)
+        elif letter == 'f':
+            # Fire employees/members
+            is_member_or_employee = (int(input("Type 0 for member and Type 1 for employee.\n")))
+            person_id = int(input("What is the member or employee ID?\n"))
+            fire_employee_or_member(conn, person_id, is_member_or_employee)
+            
         else:
             print_error("Not an available option, please try again.")
 
@@ -167,5 +220,9 @@ if __name__ == '__main__':
     # This conn is a global object that other functinos can access.
     # You'll need to use cursor = conn.cursor() each time you are
     # about to execute a query with cursor.execute(<sqlquery>)
-    (conn, IS_ADMIN) = login_user()
+    guest_conn = get_conn('guest', 'password')
+    (conn, IS_ADMIN) = login_user(guest_conn)
+
+
+    #  = login_user()
     main()

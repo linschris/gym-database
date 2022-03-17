@@ -9,7 +9,7 @@ import mysql.connector
 import mysql.connector.errorcode as errorcode
 import sys
 
-DEBUG = True
+DEBUG = False
 
 #----------------#
 # Helper Methods #
@@ -26,12 +26,8 @@ def handle_error(err):
         print(f"{colored('ERROR', 'red')}: {colored(err, 'red')}")
         sys.exit(1)
     else:
-        error_string = f'An error occurred, couldn\'t do query.'
+        error_string = f'An error occurred, couldn\'t do query due to the following error: \n{err}.'
         print_error(error_string)
-
-#-----------------#
-# Query Functions #
-#-----------------#
 
 def execute_and_print_sql(cursor, sql, print_table=True):
     cursor.execute(sql)
@@ -43,6 +39,11 @@ def execute_and_print_sql(cursor, sql, print_table=True):
             t.add_row(list(row))
         print_success('Success!')
         print(t)
+
+#-----------------#
+# Query Functions #
+#-----------------#
+
 
 def instructor_ratings(conn):
     cursor = conn.cursor()
@@ -82,9 +83,37 @@ def pay_membership(conn, person_id):
         execute_and_print_sql(cursor, sql, False)
         print_success('Success!')
     except mysql.connector.ProgrammingError as err:
-        if not DEBUG:
-            print(f"{colored('ERROR', 'red')}: {colored(err, 'red')}")
-        # sys.exit(1)
-        else:
-            error_string = f'An error occurred, couldn\'t do query.'
-            print_error(error_string)
+        handle_error(err)
+
+def fire_person(conn, person_id):
+    pass
+
+def enroll_in_class(conn, person_id, class_id):
+    cursor = conn.cursor()
+    sql = "CALL enroll_in_class_or_session(%s, %s, 2)" % (class_id, person_id)
+    try:
+        execute_and_print_sql(cursor, sql, False)
+        print_success('Success!')
+    except mysql.connector.ProgrammingError as err:
+        handle_error(err)
+
+# cs_id = class or session id
+def rate_class_or_session(conn, cs_id, person_id, rating, num_choice):
+    cursor = conn.cursor()
+    procedure_name = 'give_class_rating' if num_choice == 2 else 'give_session_rating'
+    sql = "CALL %s(%s, %s, %s);" % (procedure_name, cs_id, person_id, rating)
+    try:
+        execute_and_print_sql(cursor, sql, False)
+        print_success('Success!')
+    except mysql.connector.ProgrammingError as err:
+        handle_error(err)
+
+
+def fire_employee_or_member(conn, person_id, is_employee):
+    cursor = conn.cursor()
+    sql = 'CALL fire_employee(%s)' % (person_id) if is_employee else 'CALL remove_member(%s)' % (person_id)
+    try:
+        execute_and_print_sql(cursor, sql, False)
+        print_success('Success!')
+    except mysql.connector.ProgrammingError as err:
+        handle_error(err)

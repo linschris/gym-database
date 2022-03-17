@@ -4,6 +4,7 @@ DROP FUNCTION IF EXISTS total_stats;
 
 -- Procedures
 DROP PROCEDURE IF EXISTS enroll_in_class_or_session;
+DROP PROCEDURE IF EXISTS fire_employee;
 DROP PROCEDURE IF EXISTS give_class_rating;
 DROP PROCEDURE IF EXISTS give_session_rating;
 DROP PROCEDURE IF EXISTS pay_membership;
@@ -132,6 +133,23 @@ BEGIN
     person_id = member_id; 
 END !
 DELIMITER ;
+
+DELIMITER !
+-- Fires employees
+-- Removes an employee
+CREATE PROCEDURE fire_employee (
+    employee_id INT
+)
+BEGIN 
+    DELETE FROM class_instructor WHERE person_id = employee_id;
+    DELETE FROM session WHERE trainer_id = employee_id;
+    DELETE FROM employee WHERE
+    person_id = employee_id; 
+    DELETE FROM person WHERE
+    person_id = employee_id; 
+END !
+DELIMITER ;
+
 
 -- Allows users to "pay" for their membership.
 -- Updates last_payment to now()
